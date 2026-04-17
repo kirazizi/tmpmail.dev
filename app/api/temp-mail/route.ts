@@ -9,6 +9,10 @@ if (!process.env.MAIL_API_BASE) {
 
 const MAILTM_BASE = process.env.MAIL_API_BASE;
 
+let cachedDomain: string | null = null;
+let domainCachedAt = 0;
+const DOMAIN_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
 // Helper to generate a random id
 function randomId(length = 12) {
   const targetLength = Math.max(1, Math.floor(length));
@@ -26,14 +30,27 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const domainsRes = await retry(() =>
-      fetchWithTimeout(`${MAILTM_BASE}/domains`, { timeoutMs: 7000 })
-    );
-    if (!domainsRes.ok) {
-      return NextResponse.json({ error: "Failed to load domains" }, { status: 500 });
+    let domain = cachedDomain;
+    if (!domain || Date.now() - domainCachedAt > DOMAIN_CACHE_TTL) {
+      const domainsRes = await retry(() =>
+        fetchWithTimeout(`${MAILTM_BASE}/domains`, { timeoutMs: 7000 })
+      );
+      if (!domainsRes.ok) {
+        if (cachedDomain) {
+          domain = cachedDomain; // use stale cache rather than fail
+        } else {
+          console.error("/api/temp-mail domains error", domainsRes.status);
+          return NextResponse.json({ error: "Failed to load domains" }, { status: 500 });
+        }
+      } else {
+        const domainsData = await domainsRes.json();
+        domain = domainsData["hydra:member"]?.[0]?.domain ?? null;
+        if (domain) {
+          cachedDomain = domain;
+          domainCachedAt = Date.now();
+        }
+      }
     }
-    const domainsData = await domainsRes.json();
-    const domain = domainsData["hydra:member"]?.[0]?.domain;
 
     if (!domain) {
       return NextResponse.json({ error: "No domain available" }, { status: 500 });
