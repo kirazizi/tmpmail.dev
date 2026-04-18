@@ -30,6 +30,7 @@ export default function Home() {
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [remainingSec, setRemainingSec] = useState<number>(0);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // --- Logic Helpers ---
 
@@ -70,6 +71,10 @@ export default function Home() {
         setEmail(null);
         setToken(null);
         setExpiresAt(null);
+        setMessages([]);
+        setSelectedMessageId(null);
+        setSelectedMessage(null);
+        setReadIds(new Set());
         window.localStorage.removeItem("tempMailAccount");
         window.localStorage.removeItem("tempMailExpiresAt");
       }
@@ -368,7 +373,7 @@ export default function Home() {
                       </div>
 
                       <button
-                        onClick={generateEmail}
+                        onClick={() => setShowConfirmDialog(true)}
                         className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col items-center justify-center text-center group"
                       >
                         <span className="text-xs text-zinc-500 mb-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-200">
@@ -426,7 +431,7 @@ export default function Home() {
                     onClick={manualRefresh}
                     disabled={!token || messagesLoading}
                     className={cn(
-                      "w-9 h-9 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors",
+                      "inline-flex items-center justify-center transition-colors text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none disabled:opacity-40 cursor-pointer",
                       messagesLoading && "text-indigo-500"
                     )}
                     title="Refresh Messages"
@@ -443,48 +448,65 @@ export default function Home() {
                 <div
                   className={cn(
                     "absolute inset-0 z-30 bg-white dark:bg-zinc-900 transition-transform duration-300 ease-in-out flex flex-col",
-                    selectedMessage ? "translate-x-0" : "translate-x-full"
+                    selectedMessageId ? "translate-x-0" : "translate-x-full"
                   )}
                 >
-                  {selectedMessage && (
-                    <>
-                      <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-                        <button
-                          onClick={() => setSelectedMessage(null)}
-                          className="p-2 -ml-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 transition-colors"
-                        >
-                          <ArrowLeft size={18} />
-                        </button>
-                        <span className="text-sm font-medium">Read Message</span>
-                      </div>
-                      <div className="flex-1 overflow-y-auto p-6">
-                        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">
-                          {selectedMessage.subject || "(No Subject)"}
-                        </h1>
-                        <div className="flex items-center justify-between text-sm text-zinc-500 mb-8 pb-8 border-b border-zinc-200 dark:border-zinc-800">
-                          <div className="flex flex-col">
-                            <span className="font-medium text-zinc-900 dark:text-zinc-200">
-                              {selectedMessage.from?.name || selectedMessage.from?.address}
-                            </span>
-                            <span className="text-xs text-zinc-400">{selectedMessage.from?.address}</span>
-                          </div>
-                          <time>{formatRelative(selectedMessage.createdAt)}</time>
-                        </div>
+                  <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+                    <button
+                      onClick={() => { setSelectedMessage(null); setSelectedMessageId(null); }}
+                      className="p-2 -ml-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 transition-colors"
+                    >
+                      <ArrowLeft size={18} />
+                    </button>
+                    <span className="text-sm font-medium">
+                      {selectedLoading ? "Loading..." : "Read Message"}
+                    </span>
+                  </div>
 
-                        <div className="prose prose-zinc dark:prose-invert max-w-none text-sm">
-                          {selectedMessage.html?.[0] ? (
-                            <iframe
-                              className="w-full min-h-[400px] rounded-md border border-zinc-200 dark:border-zinc-800 bg-transparent"
-                              sandbox="allow-popups allow-popups-to-escape-sandbox"
-                              srcDoc={`<!DOCTYPE html><html><head><meta charset=\"utf-8\"/><meta http-equiv=\"Content-Security-Policy\" content=\"upgrade-insecure-requests\"/><base target=\"_blank\"/><style>html,body{margin:0;padding:0;background:transparent;color:#111} a{color:#2563eb} @media(prefers-color-scheme:dark){body{color:#e5e7eb;background:transparent}}</style></head><body>${selectedMessage.html[0]}</body></html>`}
-                            />
-                          ) : (
-                            <pre className="whitespace-pre-wrap font-sans">{selectedMessage.text}</pre>
-                          )}
+                  {selectedLoading ? (
+                    <div className="flex-1 overflow-y-auto p-6 space-y-4 animate-pulse">
+                      <div className="h-7 w-3/4 bg-zinc-200 dark:bg-zinc-800 rounded-lg" />
+                      <div className="flex items-center justify-between pt-2 pb-6 border-b border-zinc-200 dark:border-zinc-800">
+                        <div className="space-y-2">
+                          <div className="h-4 w-32 bg-zinc-200 dark:bg-zinc-800 rounded" />
+                          <div className="h-3 w-48 bg-zinc-200 dark:bg-zinc-800 rounded" />
                         </div>
+                        <div className="h-3 w-16 bg-zinc-200 dark:bg-zinc-800 rounded" />
                       </div>
-                    </>
-                  )}
+                      <div className="space-y-3 pt-2">
+                        <div className="h-3 w-full bg-zinc-200 dark:bg-zinc-800 rounded" />
+                        <div className="h-3 w-5/6 bg-zinc-200 dark:bg-zinc-800 rounded" />
+                        <div className="h-3 w-4/6 bg-zinc-200 dark:bg-zinc-800 rounded" />
+                      </div>
+                    </div>
+                  ) : selectedMessage ? (
+                    <div className="flex-1 overflow-y-auto p-6">
+                      <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">
+                        {selectedMessage.subject || "(No Subject)"}
+                      </h1>
+                      <div className="flex items-center justify-between text-sm text-zinc-500 mb-8 pb-8 border-b border-zinc-200 dark:border-zinc-800">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-zinc-900 dark:text-zinc-200">
+                            {selectedMessage.from?.name || selectedMessage.from?.address}
+                          </span>
+                          <span className="text-xs text-zinc-400">{selectedMessage.from?.address}</span>
+                        </div>
+                        <time>{formatRelative(selectedMessage.createdAt)}</time>
+                      </div>
+
+                      <div className="prose prose-zinc dark:prose-invert max-w-none text-sm">
+                        {selectedMessage.html?.[0] ? (
+                          <iframe
+                            className="w-full min-h-[400px] rounded-md border border-zinc-200 dark:border-zinc-800 bg-transparent"
+                            sandbox="allow-popups allow-popups-to-escape-sandbox"
+                            srcDoc={`<!DOCTYPE html><html><head><meta charset=\"utf-8\"/><meta http-equiv=\"Content-Security-Policy\" content=\"upgrade-insecure-requests\"/><base target=\"_blank\"/><style>html,body{margin:0;padding:0;background:transparent;color:#111} a{color:#2563eb} @media(prefers-color-scheme:dark){body{color:#e5e7eb;background:transparent}}</style></head><body>${selectedMessage.html[0]}</body></html>`}
+                          />
+                        ) : (
+                          <pre className="whitespace-pre-wrap font-sans">{selectedMessage.text}</pre>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
 
                 {/* View: Message List */}
@@ -528,7 +550,12 @@ export default function Home() {
                           <button
                             key={msg.id}
                             onClick={() => openMessage(msg.id)}
-                            className="relative w-full text-left px-6 py-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group"
+                            className={cn(
+                              "relative w-full text-left px-6 py-4 transition-colors group",
+                              selectedMessageId === msg.id
+                                ? "bg-zinc-100 dark:bg-zinc-800"
+                                : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                            )}
                           >
                             {/* Unread left accent bar */}
                             {!isRead && (
@@ -583,6 +610,41 @@ export default function Home() {
 
 
       </div>
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowConfirmDialog(false)}
+          />
+          <div className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
+                <Trash2 className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">Generate new address?</h3>
+                <p className="text-sm text-zinc-500">Your current inbox and all messages will be permanently lost.</p>
+              </div>
+            </div>
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={() => setShowConfirmDialog(false)}
+                className="flex-1 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+              >
+                Keep current
+              </button>
+              <button
+                onClick={() => { setShowConfirmDialog(false); generateEmail(); }}
+                className="flex-1 py-2.5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                Yes, reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
