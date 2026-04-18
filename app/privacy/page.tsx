@@ -16,13 +16,13 @@ export default function PrivacyPage() {
 
         <div className="space-y-6 text-zinc-600 dark:text-zinc-400 leading-relaxed">
           <p>
-            Your privacy is critically important to us. At Tmp Mail, we operate with a fundamental respect for your anonymity and data security.
+            Your privacy is critically important to us. At Tmp Mail, we operate with a fundamental respect for your anonymity and data security. Tmp Mail is a <strong>receive-only</strong> service — we generate a disposable inbox so you can receive verification codes and confirmation emails without sharing your real email address.
           </p>
 
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">1. Information Collection</h2>
             <p>
-              We act as a strict data conduit. We do not require any personal information (such as your real name, address, or phone number) to use our service. The purpose of this service is to provide temporary email addresses for short-term use.
+              We act as a strict data conduit. We do not require any personal information (such as your real name, address, or phone number) to use our service. No account registration is needed — just open the app and a temporary inbox is instantly ready for you.
             </p>
           </section>
 
@@ -43,7 +43,7 @@ export default function PrivacyPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">4. Third-Party Services</h2>
             <p>
-              Our service may rely on upstream email providers for mail processing. While we choose partners who prioritize privacy, we encourage user discretion. Do not use this service for sensitive personal communications, banking, or illegal activities.
+              Our service relies on upstream email providers for inbound mail processing. While we choose partners who prioritize privacy, please be aware that emails pass through these providers before reaching your inbox. Do not rely on this service for sensitive personal communications or long-term account recovery.
             </p>
           </section>
 
@@ -55,7 +55,7 @@ export default function PrivacyPage() {
           </section>
 
           <div className="pt-8 text-sm text-zinc-400">
-            Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            Last updated: April 18, 2026
           </div>
         </div>
       </div>

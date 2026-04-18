@@ -20,41 +20,48 @@ export default function TermsPage() {
           </p>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">1. Use of Service</h2>
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">1. Nature of Service</h2>
             <p>
-              Tmp Mail is provided for personal, non-commercial use to protect your privacy and avoid spam. You agree not to use this service for:
+              Tmp Mail is a <strong>receive-only</strong> temporary email service. It is designed to help you receive verification codes, confirmation emails, and one-time messages from websites and services — without exposing your real email address. You cannot send emails through this service.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">2. Acceptable Use</h2>
+            <p>
+              Tmp Mail is provided for personal or developer use to protect your privacy and avoid inbox spam. You agree not to use this service for:
             </p>
             <ul className="list-disc pl-5 space-y-1">
-              <li>Sending unsolicited email (spam).</li>
-              <li>Illegal activities or promoting illegal content.</li>
-              <li>Harassment, abuse, or harming others.</li>
-              <li>Interfering with the proper operation of the service.</li>
+              <li>Creating fraudulent accounts or bypassing account limits on third-party platforms.</li>
+              <li>Illegal activities or accessing illegal content.</li>
+              <li>Interfering with the proper operation of the service or its infrastructure.</li>
+              <li>Any activity that violates applicable laws or regulations.</li>
             </ul>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">2. No Warranty ("As Is")</h2>
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">3. No Warranty ("As Is")</h2>
             <p>
               The service is provided on an "AS IS" and "AS AVAILABLE" basis. We make no warranties, express or implied, regarding the reliability, accuracy, availability, or security of the service. We are not liable for any lost emails, data loss, or damages resulting from the use of this service.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">3. Determining Expiry</h2>
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">4. Temporary Addresses & Data Expiry</h2>
             <p>
               Email addresses and messages provided by this service are temporary. We reserve the right to recycle domains, expire addresses, or delete data at any time without notice. Do not use this service for important accounts or long-term communication.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">4. Limitation of Liability</h2>
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">5. Limitation of Liability</h2>
             <p>
               In no event shall Tmp Mail or its operators be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the service.
             </p>
           </section>
 
           <div className="pt-8 text-sm text-zinc-400">
-            Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            Last updated: April 18, 2026
           </div>
         </div>
       </div>

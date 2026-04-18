@@ -1,7 +1,8 @@
-import { randomUUID } from "crypto";
+import { randomInt, randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { fetchWithTimeout, retry } from "@/lib/api";
 import { rateLimit } from "@/lib/rateLimit";
+import { uniqueNamesGenerator, names } from "unique-names-generator";
 
 if (!process.env.MAIL_API_BASE) {
   throw new Error("MAIL_API_BASE is not defined");
@@ -13,8 +14,15 @@ let cachedDomain: string | null = null;
 let domainCachedAt = 0;
 const DOMAIN_CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
-// Helper to generate a random id
-function randomId(length = 12) {
+// Helper to generate a random email local-part like "nathalie38"
+function randomEmailName() {
+  const name = uniqueNamesGenerator({ dictionaries: [names], length: 1 }).toLowerCase();
+  const num = randomInt(100);
+  return `${name}${num}`;
+}
+
+// Helper to generate a random password
+function randomPassword(length = 16) {
   const targetLength = Math.max(1, Math.floor(length));
   let out = "";
   while (out.length < targetLength) {
@@ -56,8 +64,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No domain available" }, { status: 500 });
     }
 
-    const address = `${randomId()}@${domain}`;
-    const password = randomId(16);
+    const address = `${randomEmailName()}@${domain}`;
+    const password = randomPassword(16);
 
     const accountRes = await retry(() =>
       fetchWithTimeout(`${MAILTM_BASE}/accounts`, {
