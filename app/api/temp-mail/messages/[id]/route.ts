@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchWithTimeout, retry } from "@/lib/api";
 
-if (!process.env.MAIL_API_BASE) {
-  throw new Error("MAIL_API_BASE is not defined");
-}
-
-const MAILTM_BASE = process.env.MAIL_API_BASE;
+const MAILTM_BASE = process.env.MAIL_API_BASE ?? "";
 
 export async function GET(
   req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
+  if (!MAILTM_BASE) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
   try {
     const auth = req.headers.get("authorization") || "";
     const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
@@ -50,6 +49,9 @@ export async function PATCH(
   req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
+  if (!MAILTM_BASE) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
   try {
     const auth = req.headers.get("authorization") || "";
     const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";

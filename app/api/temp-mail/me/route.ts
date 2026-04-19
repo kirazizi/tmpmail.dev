@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { fetchWithTimeout, retry } from "@/lib/api";
 
-if (!process.env.MAIL_API_BASE) {
-    throw new Error("MAIL_API_BASE is not defined");
-}
-
-const MAILTM_BASE = process.env.MAIL_API_BASE;
+const MAILTM_BASE = process.env.MAIL_API_BASE ?? "";
 
 export async function GET(request: Request) {
+    if (!MAILTM_BASE) {
+        return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+    }
     const authHeader = request.headers.get("Authorization");
 
     if (!authHeader) {
