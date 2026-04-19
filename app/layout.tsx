@@ -31,11 +31,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://tmpmail.dev",
   },
-  icons: {
-    icon: "/tmpmail.png",
-    shortcut: "/tmpmail.png",
-    apple: "/tmpmail.png",
-  },
 };
 
 export default function RootLayout({

@@ -4,11 +4,7 @@ import { fetchWithTimeout, retry } from "@/lib/api";
 import { rateLimit } from "@/lib/rateLimit";
 import { uniqueNamesGenerator, names } from "unique-names-generator";
 
-if (!process.env.MAIL_API_BASE) {
-  throw new Error("MAIL_API_BASE is not defined");
-}
-
-const MAILTM_BASE = process.env.MAIL_API_BASE;
+const MAILTM_BASE = process.env.MAIL_API_BASE ?? "";
 
 let cachedDomain: string | null = null;
 let domainCachedAt = 0;
@@ -32,6 +28,9 @@ function randomPassword(length = 16) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!MAILTM_BASE) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
   if (!rateLimit(ip, 5, 10 * 60 * 1000)) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
