@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
   }
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
-  if (!rateLimit(ip, 5, 10 * 60 * 1000)) {
+  if (!(await rateLimit(ip, 5, 10 * 60 * 1000))) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
