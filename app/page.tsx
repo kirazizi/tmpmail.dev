@@ -481,9 +481,9 @@ export default function Home() {
                     </div>
                   ) : selectedMessage ? (
                     <div className="flex-1 overflow-y-auto p-6">
-                      <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">
+                      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">
                         {selectedMessage.subject || "(No Subject)"}
-                      </h1>
+                      </h2>
                       <div className="flex items-center justify-between text-sm text-zinc-500 mb-8 pb-8 border-b border-zinc-200 dark:border-zinc-800">
                         <div className="flex flex-col">
                           <span className="font-medium text-zinc-900 dark:text-zinc-200">
