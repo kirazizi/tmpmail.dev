@@ -12,15 +12,25 @@ export async function fetchWithTimeout(
   }
 }
 
-export async function retry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 400): Promise<T> {
-  let lastErr: unknown;
+// Only TypeError means the connection failed before the request reached the server.
+// AbortError (timeout) is ambiguous — the server may have already processed the request.
+export function isNetworkError(err: unknown): boolean {
+  return err instanceof TypeError;
+}
+
+export async function retry<T>(
+  fn: () => Promise<T>,
+  attempts = 3,
+  delayMs = 400,
+  shouldRetry: (err: unknown) => boolean = isNetworkError
+): Promise<T> {
   for (let i = 0; i < attempts; i++) {
     try {
       return await fn();
     } catch (err) {
-      lastErr = err;
-      if (i < attempts - 1) await new Promise((r) => setTimeout(r, delayMs * (i + 1)));
+      if (i === attempts - 1 || !shouldRetry(err)) throw err;
+      await new Promise((r) => setTimeout(r, delayMs * (i + 1)));
     }
   }
-  throw lastErr;
+  throw new Error("retry: unreachable");
 }

@@ -259,7 +259,7 @@ export default function Home() {
   const hms = formatHMS(remainingSec);
 
   return (
-    <div suppressHydrationWarning className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900">
 
       {/* Background Decor */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -350,6 +350,7 @@ export default function Home() {
                         </div>
                         <button
                           onClick={copyToClipboard}
+                          aria-label="Copy email address"
                           className={cn(
                             "w-10 h-10 inline-flex items-center justify-center rounded-lg transition-colors",
                             copied
@@ -430,6 +431,7 @@ export default function Home() {
                   <button
                     onClick={manualRefresh}
                     disabled={!token || messagesLoading}
+                    aria-label="Refresh messages"
                     className={cn(
                       "inline-flex items-center justify-center transition-colors text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none disabled:opacity-40 cursor-pointer",
                       messagesLoading && "text-indigo-500"
@@ -454,6 +456,7 @@ export default function Home() {
                   <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
                     <button
                       onClick={() => { setSelectedMessage(null); setSelectedMessageId(null); }}
+                      aria-label="Back to inbox"
                       className="p-2 -ml-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 transition-colors"
                     >
                       <ArrowLeft size={18} />
@@ -481,9 +484,9 @@ export default function Home() {
                     </div>
                   ) : selectedMessage ? (
                     <div className="flex-1 overflow-y-auto p-6">
-                      <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">
+                      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">
                         {selectedMessage.subject || "(No Subject)"}
-                      </h1>
+                      </h2>
                       <div className="flex items-center justify-between text-sm text-zinc-500 mb-8 pb-8 border-b border-zinc-200 dark:border-zinc-800">
                         <div className="flex flex-col">
                           <span className="font-medium text-zinc-900 dark:text-zinc-200">

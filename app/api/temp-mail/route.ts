@@ -66,14 +66,12 @@ export async function POST(req: NextRequest) {
     const address = `${randomEmailName()}@${domain}`;
     const password = randomPassword(16);
 
-    const accountRes = await retry(() =>
-      fetchWithTimeout(`${MAILTM_BASE}/accounts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address, password }),
-        timeoutMs: 7000,
-      })
-    );
+    const accountRes = await fetchWithTimeout(`${MAILTM_BASE}/accounts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address, password }),
+      timeoutMs: 7000,
+    });
 
     if (!accountRes.ok) {
       const details = await accountRes.text();
@@ -82,14 +80,12 @@ export async function POST(req: NextRequest) {
     }
     const account = await accountRes.json();
 
-    const tokenRes = await retry(() =>
-      fetchWithTimeout(`${MAILTM_BASE}/token`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address, password }),
-        timeoutMs: 7000,
-      })
-    );
+    const tokenRes = await fetchWithTimeout(`${MAILTM_BASE}/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address, password }),
+      timeoutMs: 7000,
+    });
 
     if (!tokenRes.ok) {
       const details = await tokenRes.text();
