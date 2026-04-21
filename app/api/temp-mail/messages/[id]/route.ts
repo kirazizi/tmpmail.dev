@@ -18,12 +18,13 @@ export async function GET(
     }
 
     const { id } = await ctx.params;
-    if (!id) {
-      return NextResponse.json({ error: "Missing message id" }, { status: 400 });
+    if (!id || !/^[A-Za-z0-9_-]+$/.test(id)) {
+      return NextResponse.json({ error: "Invalid message id" }, { status: 400 });
     }
 
+    const safeId = encodeURIComponent(id);
     const detailRes = await retry(() =>
-      fetchWithTimeout(`${MAILTM_BASE}/messages/${id}`, {
+      fetchWithTimeout(`${MAILTM_BASE}/messages/${safeId}`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
         timeoutMs: 7000,
@@ -60,11 +61,12 @@ export async function PATCH(
     }
 
     const { id } = await ctx.params;
-    if (!id) {
-      return NextResponse.json({ error: "Missing message id" }, { status: 400 });
+    if (!id || !/^[A-Za-z0-9_-]+$/.test(id)) {
+      return NextResponse.json({ error: "Invalid message id" }, { status: 400 });
     }
 
-    const res = await fetchWithTimeout(`${MAILTM_BASE}/messages/${id}`, {
+    const safeId = encodeURIComponent(id);
+    const res = await fetchWithTimeout(`${MAILTM_BASE}/messages/${safeId}`, {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${token}`,

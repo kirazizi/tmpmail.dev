@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import DOMPurify from "dompurify";
 import {
   Copy,
   RefreshCw,
@@ -501,14 +502,14 @@ export default function Home() {
                         {selectedMessage.html?.[0] ? (
                           <iframe
                             className="w-full min-h-[400px] rounded-md border border-zinc-200 dark:border-zinc-800 bg-transparent"
-                            sandbox="allow-popups allow-popups-to-escape-sandbox"
-                            srcDoc={`<!DOCTYPE html><html><head><meta charset=\"utf-8\"/><meta http-equiv=\"Content-Security-Policy\" content=\"upgrade-insecure-requests\"/><base target=\"_blank\"/><style>html,body{margin:0;padding:0;background:transparent;color:#111} a{color:#2563eb} @media(prefers-color-scheme:dark){body{color:#e5e7eb;background:transparent}}</style></head><body>${selectedMessage.html[0]}</body></html>`}
+                            sandbox="allow-popups"
+                            srcDoc={`<!DOCTYPE html><html><head><meta charset="utf-8"/><meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"/><base target="_blank"/><style>html,body{margin:0;padding:0;background:transparent;color:#111} a{color:#2563eb} @media(prefers-color-scheme:dark){body{color:#e5e7eb;background:transparent}}</style></head><body>${DOMPurify.sanitize(selectedMessage.html[0])}</body></html>`}
                           />
                         ) : (
                           <pre className="whitespace-pre-wrap font-sans">{selectedMessage.text}</pre>
                         )}
                       </div>
-                    </div>
+                      </div>
                   ) : null}
                 </div>
 
