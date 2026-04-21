@@ -10,10 +10,10 @@ let cachedDomain: string | null = null;
 let domainCachedAt = 0;
 const DOMAIN_CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
-// Helper to generate a random email local-part like "nathalie38"
+// Helper to generate a random email local-part like "nathalie3847"
 function randomEmailName() {
   const name = uniqueNamesGenerator({ dictionaries: [names], length: 1 }).toLowerCase();
-  const num = randomInt(100);
+  const num = randomInt(10000);
   return `${name}${num}`;
 }
 
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   if (!MAILTM_BASE) {
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
   }
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  const ip = req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
   if (!(await rateLimit(ip, 5, 10 * 60 * 1000))) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
@@ -63,22 +63,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No domain available" }, { status: 500 });
     }
 
-    const address = `${randomEmailName()}@${domain}`;
-    const password = randomPassword(16);
+    let address = "";
+    let password = "";
+    let account: Record<string, unknown> | null = null;
 
-    const accountRes = await fetchWithTimeout(`${MAILTM_BASE}/accounts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ address, password }),
-      timeoutMs: 7000,
-    });
+    for (let attempt = 0; attempt < 3; attempt++) {
+      address = `${randomEmailName()}@${domain}`;
+      password = randomPassword(16);
 
-    if (!accountRes.ok) {
+      const accountRes = await fetchWithTimeout(`${MAILTM_BASE}/accounts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address, password }),
+        timeoutMs: 7000,
+      });
+
+      if (accountRes.ok) {
+        account = await accountRes.json();
+        break;
+      }
+
       const details = await accountRes.text();
+      if (accountRes.status === 422 && details.includes("already used")) {
+        // Address collision — try again with a fresh random address
+        continue;
+      }
       console.error("/api/temp-mail create account error", details);
       return NextResponse.json({ error: "Failed to create account" }, { status: 500 });
     }
-    const account = await accountRes.json();
+
+    if (!account) {
+      return NextResponse.json({ error: "Failed to create account" }, { status: 500 });
+    }
 
     const tokenRes = await fetchWithTimeout(`${MAILTM_BASE}/token`, {
       method: "POST",
@@ -95,7 +111,7 @@ export async function POST(req: NextRequest) {
 
     const tokenData = await tokenRes.json();
 
-    let createdAt: string | undefined = account?.createdAt;
+    let createdAt: string | undefined = (account?.createdAt as string) ?? undefined;
     if (!createdAt) {
       const meRes = await retry(() =>
         fetchWithTimeout(`${MAILTM_BASE}/me`, {
