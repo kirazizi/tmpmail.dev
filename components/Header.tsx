@@ -116,7 +116,7 @@ export default function Header() {
               Contact
             </Link>
             <Link
-              href="https://ko-fi.com/kirazizi"
+              href="https://ko-fi.com/tmpmail"
               target="_blank"
               rel="noreferrer"
               onClick={() => setMobileOpen(false)}

@@ -62,7 +62,7 @@ export default function AboutPage() {
               </p>
             </div>
             <a
-              href="https://ko-fi.com/kirazizi"
+              href="https://ko-fi.com/tmpmail"
               target="_blank"
               rel="noreferrer"
               className="shrink-0 inline-flex items-center gap-3 px-5 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-semibold text-sm border border-zinc-800 dark:border-zinc-200 hover:bg-zinc-700 dark:hover:bg-zinc-100 transition-colors"
