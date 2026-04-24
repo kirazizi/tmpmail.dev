@@ -1,22 +1,22 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { fetchWithTimeout, retry } from "@/lib/api";
 
 const MAILTM_BASE = process.env.MAIL_API_BASE ?? "";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   if (!MAILTM_BASE) {
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
   }
-  const authHeader = request.headers.get("Authorization");
+  const token = request.cookies.get("tmSession")?.value;
 
-  if (!authHeader) {
-    return NextResponse.json({ error: "Missing Authorization header" }, { status: 401 });
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const res = await retry(() =>
       fetchWithTimeout(`${MAILTM_BASE}/me`, {
-        headers: { Authorization: authHeader },
+        headers: { Authorization: `Bearer ${token}` },
       })
     );
 

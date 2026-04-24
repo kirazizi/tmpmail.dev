@@ -11,10 +11,9 @@ export async function GET(
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
   }
   try {
-    const auth = req.headers.get("authorization") || "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+    const token = req.cookies.get("tmSession")?.value;
     if (!token) {
-      return NextResponse.json({ error: "Missing Bearer token" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await ctx.params;
@@ -54,10 +53,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
   }
   try {
-    const auth = req.headers.get("authorization") || "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+    const token = req.cookies.get("tmSession")?.value;
     if (!token) {
-      return NextResponse.json({ error: "Missing Bearer token" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await ctx.params;
