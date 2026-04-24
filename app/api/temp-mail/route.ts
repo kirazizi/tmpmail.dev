@@ -125,11 +125,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({
-      address,
-      token: tokenData.token,
-      createdAt,
+    const res = NextResponse.json({ address, createdAt });
+    res.cookies.set("tmSession", tokenData.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/api/temp-mail",
+      maxAge: 60 * 60,
     });
+    return res;
   } catch (error) {
     console.error("/api/temp-mail error", error);
     return NextResponse.json(

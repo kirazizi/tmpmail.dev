@@ -19,7 +19,6 @@ import { cn } from "@/lib/utils";
 
 export default function Home() {
   const [email, setEmail] = useState<string | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
@@ -70,14 +69,11 @@ export default function Home() {
       setRemainingSec(Math.floor(remMs / 1000));
       if (remMs <= 0) {
         setEmail(null);
-        setToken(null);
         setExpiresAt(null);
         setMessages([]);
         setSelectedMessageId(null);
         setSelectedMessage(null);
         setReadIds(new Set());
-        window.localStorage.removeItem("tempMailAccount");
-        window.localStorage.removeItem("tempMailExpiresAt");
       }
     };
     tick();
@@ -86,76 +82,28 @@ export default function Home() {
   }, [expiresAt]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      window.localStorage.removeItem("tempMailExpiresAt");
-
-      let storedToken = window.localStorage.getItem("tempMailToken");
-
-      if (!storedToken) {
-        const rawFn = window.localStorage.getItem("tempMailAccount");
-        if (rawFn) {
-          try {
-            const parsed = JSON.parse(rawFn);
-            if (parsed.token) {
-              storedToken = parsed.token;
-              window.localStorage.setItem("tempMailToken", storedToken!);
-              window.localStorage.removeItem("tempMailAccount");
-            }
-          } catch (e) {
-            window.localStorage.removeItem("tempMailAccount");
-          }
+    fetch("/api/temp-mail/me")
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          setEmail(data.address);
+          const created = data.createdAt ? new Date(data.createdAt).getTime() : Date.now();
+          setExpiresAt(created + 60 * 60 * 1000);
         }
-      }
-
-      if (storedToken) {
-        setToken(storedToken);
-        fetch("/api/temp-mail/me", {
-          headers: { Authorization: `Bearer ${storedToken}` },
-        })
-          .then(async (res) => {
-            if (res.ok) {
-              const data = await res.json();
-              setEmail(data.address);
-              const created = data.createdAt ? new Date(data.createdAt).getTime() : Date.now();
-              setExpiresAt(created + 60 * 60 * 1000);
-            } else {
-              window.localStorage.removeItem("tempMailToken");
-              window.localStorage.removeItem("tempMailAccount");
-              setToken(null);
-            }
-          })
-          .catch(() => {
-            window.localStorage.removeItem("tempMailToken");
-            window.localStorage.removeItem("tempMailAccount");
-            setToken(null);
-          })
-          .finally(() => {
-            setInitializing(false);
-          });
-      } else {
-        setInitializing(false);
-      }
-    } catch (error) {
-      console.error("Failed to read localStorage", error);
-      setInitializing(false);
-    }
+      })
+      .catch(() => {})
+      .finally(() => setInitializing(false));
   }, []);
 
   useEffect(() => {
-    if (!token) return;
+    if (!email) return;
     let cancelled = false;
     const fetchMessages = async () => {
       try {
-        const res = await fetch(`/api/temp-mail/messages`, {
-          cache: "no-store",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(`/api/temp-mail/messages`, { cache: "no-store" });
         if (res.status === 401) {
           setEmail(null);
-          setToken(null);
           setExpiresAt(null);
-          window.localStorage.removeItem("tempMailToken");
           return;
         }
         if (!res.ok) return;
@@ -172,7 +120,7 @@ export default function Home() {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [token]);
+  }, [email]);
 
   const generateEmail = async () => {
     try {
@@ -189,17 +137,8 @@ export default function Home() {
       }
       const data = await res.json();
       setEmail(data.address);
-      setToken(data.token);
-
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("tempMailToken", data.token);
-        window.localStorage.removeItem("tempMailAccount");
-        window.localStorage.removeItem("tempMailExpiresAt");
-
-        const base = data.createdAt ? new Date(data.createdAt).getTime() : Date.now();
-        const exp = base + 60 * 60 * 1000;
-        setExpiresAt(exp);
-      }
+      const base = data.createdAt ? new Date(data.createdAt).getTime() : Date.now();
+      setExpiresAt(base + 60 * 60 * 1000);
     } catch (error) {
       console.error(error);
     } finally {
@@ -216,13 +155,10 @@ export default function Home() {
   };
 
   const manualRefresh = async () => {
-    if (!token) return;
+    if (!email) return;
     setMessagesLoading(true);
     try {
-      const res = await fetch(`/api/temp-mail/messages`, {
-        cache: "no-store",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(`/api/temp-mail/messages`, { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setMessages(data["hydra:member"] ?? []);
@@ -233,7 +169,7 @@ export default function Home() {
   };
 
   const openMessage = async (id: string) => {
-    if (!token) return;
+    if (!email) return;
     setSelectedMessageId(id);
     setSelectedLoading(true);
     setSelectedMessage(null);
@@ -241,15 +177,12 @@ export default function Home() {
     try {
       const res = await fetch(`/api/temp-mail/messages/${encodeURIComponent(id)}`, {
         cache: "no-store",
-        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         const data = await res.json();
         setSelectedMessage(data);
-        // Mark as seen on the server (fire-and-forget)
         fetch(`/api/temp-mail/messages/${encodeURIComponent(id)}`, {
           method: "PATCH",
-          headers: { Authorization: `Bearer ${token}` },
         }).catch(() => {});
       }
     } finally {
@@ -400,7 +333,7 @@ export default function Home() {
                     <Hourglass className="w-3.5 h-3.5 text-amber-500" /> 1 Hour Limit
                   </span>
                 </div>
-                {token && <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
+                {email && <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
               </div>
             </div>
 
@@ -431,7 +364,7 @@ export default function Home() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={manualRefresh}
-                    disabled={!token || messagesLoading}
+                    disabled={!email || messagesLoading}
                     aria-label="Refresh messages"
                     className={cn(
                       "inline-flex items-center justify-center transition-colors text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none disabled:opacity-40 cursor-pointer",
@@ -522,7 +455,7 @@ export default function Home() {
                       </div>
                       <div className="h-3 w-40 bg-zinc-200 dark:bg-zinc-800 rounded-full animate-pulse" />
                     </div>
-                  ) : !token ? (
+                  ) : !email ? (
                     <div className="h-full flex flex-col items-center justify-center p-8 text-center">
                       <div className="w-16 h-16 rounded-full bg-zinc-50 dark:bg-zinc-800/50 flex items-center justify-center mb-4">
                         <Zap className="h-6 w-6 text-zinc-300 dark:text-zinc-600" />
