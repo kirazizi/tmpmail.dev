@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   const secFetchSite = req.headers.get("sec-fetch-site");
   const allowedOrigin =
     process.env.NEXT_PUBLIC_BASE_URL ??
-    `https://${req.headers.get("host")}`;
+    req.nextUrl.origin;
 
   if (secFetchSite === "cross-site") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
