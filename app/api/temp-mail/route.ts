@@ -31,6 +31,20 @@ export async function POST(req: NextRequest) {
   if (!MAILTM_BASE) {
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
   }
+
+  const origin = req.headers.get("origin");
+  const secFetchSite = req.headers.get("sec-fetch-site");
+  const allowedOrigin =
+    process.env.NEXT_PUBLIC_BASE_URL ??
+    req.nextUrl.origin;
+
+  if (secFetchSite === "cross-site") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  if (origin && origin !== allowedOrigin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const ip = req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
   if (!(await rateLimit(ip, 5, 10 * 60 * 1000))) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
