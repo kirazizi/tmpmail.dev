@@ -1,6 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+interface MailAddress {
+  name?: string;
+  address?: string;
+}
+
+interface Message {
+  id: string;
+  seen: boolean;
+  from?: MailAddress;
+  subject?: string;
+  createdAt?: string;
+}
+
+interface MessageDetail extends Message {
+  html?: string[];
+  text?: string;
+}
 import DOMPurify from "dompurify";
 import {
   Copy,
@@ -22,10 +40,10 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
-  const [selectedMessage, setSelectedMessage] = useState<any | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<MessageDetail | null>(null);
   const [selectedLoading, setSelectedLoading] = useState(false);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [remainingSec, setRemainingSec] = useState<number>(0);
