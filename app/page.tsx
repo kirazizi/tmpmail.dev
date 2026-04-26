@@ -452,6 +452,7 @@ export default function Home() {
                       <div className="prose prose-zinc dark:prose-invert max-w-none text-sm">
                         {selectedMessage.html?.[0] ? (
                           <iframe
+                            title="Email body"
                             className="w-full min-h-[400px] rounded-md border border-zinc-200 dark:border-zinc-800 bg-transparent"
                             sandbox="allow-popups"
                             srcDoc={`<!DOCTYPE html><html><head><meta charset="utf-8"/><meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"/><base target="_blank"/><style>html,body{margin:0;padding:0;background:transparent;color:#111} a{color:#2563eb} @media(prefers-color-scheme:dark){body{color:#e5e7eb;background:transparent}}</style></head><body>${DOMPurify.sanitize(selectedMessage.html[0])}</body></html>`}
