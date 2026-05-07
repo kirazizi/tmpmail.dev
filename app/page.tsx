@@ -453,9 +453,9 @@ export default function Home() {
                         {selectedMessage.html?.[0] ? (
                           <iframe
                             title="Email body"
-                            className="w-full min-h-[400px] rounded-md border border-zinc-200 dark:border-zinc-800 bg-transparent"
+                            className="w-full min-h-[400px] rounded-md border border-zinc-200 dark:border-zinc-800 bg-white"
                             sandbox="allow-popups"
-                            srcDoc={`<!DOCTYPE html><html><head><meta charset="utf-8"/><meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"/><base target="_blank"/><style>html,body{margin:0;padding:0;background:transparent;color:#111} a{color:#2563eb} @media(prefers-color-scheme:dark){body{color:#e5e7eb;background:transparent}}</style></head><body>${DOMPurify.sanitize(selectedMessage.html[0])}</body></html>`}
+                            srcDoc={`<!DOCTYPE html><html><head><meta charset="utf-8"/><meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"/><meta name="color-scheme" content="light"/><meta name="supported-color-schemes" content="light"/><meta name="viewport" content="width=device-width,initial-scale=1"/><base target="_blank"/><style>html,body{margin:0;padding:0;background:#f4f4f5 !important;color:#111827 !important;color-scheme:light !important} a{color:#2563eb !important} img{max-width:100% !important;height:auto !important} .tm-card img:first-of-type{max-height:56px !important;width:auto !important} .tm-shell{min-height:100vh;padding:28px 18px;box-sizing:border-box} .tm-card{max-width:680px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:22px;box-sizing:border-box} @media (max-width:480px){.tm-shell{padding:18px 12px}.tm-card{padding:16px}}</style></head><body><div class="tm-shell"><div class="tm-card">${DOMPurify.sanitize(selectedMessage.html[0])}</div></div></body></html>`}
                           />
                         ) : (
                           <pre className="whitespace-pre-wrap font-sans">{selectedMessage.text}</pre>
